@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongodb = require('mongodb');
+var cors = require('cors');
 var MongoClient = mongodb.MongoClient;
 var MediaWikiStrategy = require('passport-mediawiki-oauth').OAuthStrategy;
 var passport = require('passport');
@@ -18,6 +19,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 // error handler
 app.use(function (err, req, res, next) {
