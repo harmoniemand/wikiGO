@@ -1,9 +1,12 @@
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
 const index = require('./routes/api/index');
 
 const app = express();
@@ -34,5 +37,35 @@ app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error');
 });
+
+class ServerApplication {
+
+    private _config : any;
+
+    constructor(private _app) {
+
+    }
+
+    public main() {
+        return this.readConfig().then(() => {
+            let connectionStr = this._config.db.connection;
+            return MongoClient.connect(connectionStr);
+        }).then((db) => {
+            console.log('Connected to database.');
+        });
+    }
+
+    private readConfig() {
+        let config = fs.readFileSync(path.join(__dirname, 'config', 'app.json'));
+        config = config.toString();
+        config = JSON.parse(config);
+        this._config = config;
+        return Promise.resolve();
+    }
+
+}
+
+let serverApplication = new ServerApplication(app);
+serverApplication.main();
 
 module.exports = app;
