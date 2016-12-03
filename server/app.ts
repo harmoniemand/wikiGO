@@ -9,6 +9,7 @@ const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 const MediaWikiStrategy = require('passport-mediawiki-oauth').OAuthStrategy;
 const passport = require('passport');
+const session = require('express-session');
 
 const app = express();
 app.set('json spaces', 2);
@@ -50,6 +51,7 @@ class ServerApplication {
             });
             console.log('Connected to database.');
             try {
+                app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}))
                 passport.use(new MediaWikiStrategy({
                         consumerKey: config.oauth.consumerKey,
                         consumerSecret: config.oauth.consumerSecret,
@@ -59,6 +61,8 @@ class ServerApplication {
 
                     }
                 ));
+                app.use(passport.initialize());
+                app.use(passport.session()); // persistent login sessions
             } catch (err) {
                 console.log(err);
             }

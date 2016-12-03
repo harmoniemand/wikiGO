@@ -9,6 +9,7 @@ var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
 var MediaWikiStrategy = require('passport-mediawiki-oauth').OAuthStrategy;
 var passport = require('passport');
+var session = require('express-session');
 var app = express();
 app.set('json spaces', 2);
 // uncomment after placing your favicon in /public
@@ -41,12 +42,15 @@ var ServerApplication = (function () {
             });
             console.log('Connected to database.');
             try {
+                app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 } }));
                 passport.use(new MediaWikiStrategy({
                     consumerKey: config.oauth.consumerKey,
                     consumerSecret: config.oauth.consumerSecret,
                     callbackURL: config.oauth.callbackURL
                 }, function (token, tokenSecret, profile, done) {
                 }));
+                app.use(passport.initialize());
+                app.use(passport.session()); // persistent login sessions
             }
             catch (err) {
                 console.log(err);
