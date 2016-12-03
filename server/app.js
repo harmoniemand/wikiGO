@@ -7,6 +7,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
+var MediaWikiStrategy = require('passport-mediawiki-oauth').OAuthStrategy;
+var passport = require('passport');
 var app = express();
 app.set('json spaces', 2);
 // uncomment after placing your favicon in /public
@@ -16,11 +18,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-    res.write('404 :(');
-    res.end();
-});
 // error handler
 app.use(function (err, req, res, next) {
     // set locals, only providing error in development
@@ -43,8 +40,20 @@ var ServerApplication = (function () {
             metaCollection.update({ "_id": "started" }, { $set: { "value": new Date() } }, { upsert: true }).then(function () {
             });
             console.log('Connected to database.');
+            try {
+                passport.use(new MediaWikiStrategy({
+                    consumerKey: config.oauth.consumerKey,
+                    consumerSecret: config.oauth.consumerSecret,
+                    callbackURL: config.oauth.callbackURL
+                }, function (token, tokenSecret, profile, done) {
+                }));
+            }
+            catch (err) {
+                console.log(err);
+            }
             var apiRoutes = require('./routes/api/index');
             app.use('/api', apiRoutes);
+            console.log('Ready.');
         });
     };
     ServerApplication.prototype.readConfig = function () {
