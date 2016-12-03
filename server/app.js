@@ -7,7 +7,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
-var index = require('./routes/api/index');
 var app = express();
 app.set('json spaces', 2);
 // uncomment after placing your favicon in /public
@@ -17,7 +16,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/api', index);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     res.write('404 :(');
@@ -45,6 +43,8 @@ var ServerApplication = (function () {
             metaCollection.update({ "_id": "started" }, { $set: { "value": new Date() } }, { upsert: true }).then(function () {
             });
             console.log('Connected to database.');
+            var apiRoutes = require('./routes/api/index');
+            app.use('/api', apiRoutes);
         });
     };
     ServerApplication.prototype.readConfig = function () {

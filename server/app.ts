@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
-const index = require('./routes/api/index');
 
 const app = express();
 app.set('json spaces', 2);
@@ -18,8 +17,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/api', index);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -56,6 +53,8 @@ class ServerApplication {
 
             });
             console.log('Connected to database.');
+            const apiRoutes = require('./routes/api/index');
+            app.use('/api', apiRoutes);
         });
     }
 

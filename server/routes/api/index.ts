@@ -5,5 +5,6 @@ const request = require('request');
 
 /* GET home page. */
 router.use('/geo', require('./geo/index.ts'));
+router.use('/user', require('./user/index.ts'));
 
 module.exports = router;
