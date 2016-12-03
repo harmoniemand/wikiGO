@@ -12,7 +12,7 @@ router.get('/auth/mediawiki/callback',
   function(req, res) {
       console.log("Hello from auth.", arguments);
     // Successful authentication, redirect home.
-    res.redirect('/');
+    res.redirect('/auth-success.html');
   });
 
 module.exports = router;

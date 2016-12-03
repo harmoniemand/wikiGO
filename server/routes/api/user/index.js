@@ -6,7 +6,7 @@ router.get('/auth/mediawiki', passport.authenticate('mediawiki', { scope: MEDIAW
 router.get('/auth/mediawiki/callback', passport.authenticate('mediawiki', { failureRedirect: '/' }), function (req, res) {
     console.log("Hello from auth.", arguments);
     // Successful authentication, redirect home.
-    res.redirect('/');
+    res.redirect('/auth-success.html');
 });
 module.exports = router;
 //# sourceMappingURL=index.js.map
