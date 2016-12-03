@@ -42,13 +42,44 @@ var ServerApplication = (function () {
             });
             console.log('Connected to database.');
             try {
-                app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 } }));
+                app.use(session({
+                    secret: 'keyboard cat',
+                    resave: true,
+                    saveUninitialized: true
+                }));
                 passport.use(new MediaWikiStrategy({
                     consumerKey: config.oauth.consumerKey,
                     consumerSecret: config.oauth.consumerSecret,
                     callbackURL: config.oauth.callbackURL
                 }, function (token, tokenSecret, profile, done) {
+                    console.log("passport handler", arguments);
+                    var userId = profile.id;
+                    var user = {
+                        _id: userId,
+                        displayName: profile.displayName,
+                        mediawikiGlobalId: profile.id
+                    };
+                    var usersCollection = db.collection('users');
+                    var authsCollection = db.collection('auths');
+                    usersCollection.update({ "_id": user._id }, user, { upsert: true }).then(function () {
+                        return authsCollection.update({ "_id": token }, {
+                            "_id": token,
+                            "tokenSecret": tokenSecret,
+                            "userId": userId
+                        }, { upsert: true });
+                    }).then(function () {
+                        done(null, user);
+                    });
                 }));
+                passport.serializeUser(function (user, done) {
+                    done(null, user._id);
+                });
+                passport.deserializeUser(function (id, done) {
+                    var usersCollection = db.collection('users');
+                    usersCollection.findOne({ "_id": id }).then(function (user) {
+                        done(null, user);
+                    });
+                });
                 app.use(passport.initialize());
                 app.use(passport.session()); // persistent login sessions
             }
@@ -57,6 +88,15 @@ var ServerApplication = (function () {
             }
             var apiRoutes = require('./routes/api/index');
             app.use('/api', apiRoutes);
+            app.get('/test', function (req, res) {
+                var dbgObj = {
+                    session: req.session,
+                    user: req.user,
+                    isAuthenticated: req.isAuthenticated()
+                };
+                console.log(dbgObj);
+                res.json(dbgObj);
+            });
             console.log('Ready.');
         });
     };

@@ -1,11 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const wdk = require('wikidata-sdk');
-const request = require('request');
+const rp = require('request-promise');
+const Handlebars = require('handlebars');
 
 /* GET home page. */
-router.get('/nearby', function(req, res, next) {
-    var sparql = `
+router.get('/nearby', function (req, res, next) {
+    console.log(req.query);
+    let lat = parseFloat(req.query.lat);
+    let lon = parseFloat(req.query.lon);
+    var geo = {
+        "type": "Point",
+        "coordinates": [lon, lat]
+    };
+    console.log("geo", geo);
+    let reverseGeoUrl = 'http://nominatim.openstreetmap.org/reverse?format=json&lat={{lat}}&lon={{lon}}'.replace('{{lat}}', lat).replace('{{lon}}', lon);
+    rp({
+        uri: reverseGeoUrl,
+        headers: {
+            'User-Agent': 'F00Bar2000'
+        }, json: true
+    }).then((body) => {
+        let shortAddress = {
+            country: body.address.country,
+            state: body.address.state,
+            postcode: body.address.postcode,
+            city: body.address.city
+        };
+        console.log(shortAddress);
+        let querySource = `
        SELECT ?entityRef ?entityRefLabel ?lat ?long WHERE {
          ?entityRef wdt:P131+ wd:Q3012 .  # administrative territorial entity = Paris
          ?entityRef p:P625 ?statement .
@@ -13,20 +36,25 @@ router.get('/nearby', function(req, res, next) {
          ?coordinate_node wikibase:geoLatitude ?lat .
          ?coordinate_node wikibase:geoLongitude ?long .
         
-         FILTER (ABS(?lat - 48.400722) < 0.01)
-         FILTER (ABS(?long - 9.9876367) < 0.01)
+         FILTER (ABS(?lat - {{lat}}) < 0.01)
+         FILTER (ABS(?long - {{lon}}) < 0.01)
         
          SERVICE wikibase:label {
            bd:serviceParam wikibase:language "en" .
          }
         } ORDER BY DESC(?lat)
     `;
-    var url = wdk.sparqlQuery(sparql);
-    console.log(url);
-    request(url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            res.json(JSON.parse(body, null, 2));
-        }
+        let queryTpl = Handlebars.compile(querySource);
+        let sparql = queryTpl({
+            lon: lon,
+            lat: lat
+        });
+        console.log(sparql);
+        var url = wdk.sparqlQuery(sparql);
+        console.log(url);
+        return rp({uri: url, json: true});
+    }).then((body) => {
+        res.json(body);
     });
 });
 
