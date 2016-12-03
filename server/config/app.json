@@ -1,5 +1,10 @@
 {
   "db" : {
     "connection" : "mongodb://localhost:27017/wikiGO"
+  },
+  "oauth": {
+    "consumerKey": "",
+    "consumerSecret": "",
+    "callbackURL": ""
   }
 }
