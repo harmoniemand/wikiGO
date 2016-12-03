@@ -4,11 +4,11 @@ const wdk = require('wikidata-sdk');
 const request = require('request');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/nearby', function(req, res, next) {
     var sparql = `
-       SELECT ?a ?aLabel ?lat ?long WHERE {
-         ?a wdt:P131+ wd:Q3012 .  # administrative territorial entity = Paris
-         ?a p:P625 ?statement .
+       SELECT ?entityRef ?entityRefLabel ?lat ?long WHERE {
+         ?entityRef wdt:P131+ wd:Q3012 .  # administrative territorial entity = Paris
+         ?entityRef p:P625 ?statement .
          ?statement psv:P625 ?coordinate_node .
          ?coordinate_node wikibase:geoLatitude ?lat .
          ?coordinate_node wikibase:geoLongitude ?long .
