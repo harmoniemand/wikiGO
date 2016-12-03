@@ -48,9 +48,13 @@ class ServerApplication {
 
     public main() {
         return this.readConfig().then(() => {
-            let connectionStr = this._config.db.connection;
+            let connectionStr = config.db.connection;
             return MongoClient.connect(connectionStr);
         }).then((db) => {
+            var metaCollection = db.collection('meta');
+            metaCollection.update({"_id": "started"}, {$set:{"value":new Date()}}, {upsert:true}).then(() => {
+
+            });
             console.log('Connected to database.');
         });
     }
@@ -59,7 +63,7 @@ class ServerApplication {
         let config = fs.readFileSync(path.join(__dirname, 'config', 'app.json'));
         config = config.toString();
         config = JSON.parse(config);
-        this._config = config;
+        global.config = config;
         return Promise.resolve();
     }
 

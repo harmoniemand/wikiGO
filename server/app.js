@@ -37,11 +37,13 @@ var ServerApplication = (function () {
         this._app = _app;
     }
     ServerApplication.prototype.main = function () {
-        var _this = this;
         return this.readConfig().then(function () {
-            var connectionStr = _this._config.db.connection;
+            var connectionStr = config.db.connection;
             return MongoClient.connect(connectionStr);
         }).then(function (db) {
+            var metaCollection = db.collection('meta');
+            metaCollection.update({ "_id": "started" }, { $set: { "value": new Date() } }, { upsert: true }).then(function () {
+            });
             console.log('Connected to database.');
         });
     };
@@ -49,7 +51,7 @@ var ServerApplication = (function () {
         var config = fs.readFileSync(path.join(__dirname, 'config', 'app.json'));
         config = config.toString();
         config = JSON.parse(config);
-        this._config = config;
+        global.config = config;
         return Promise.resolve();
     };
     return ServerApplication;
