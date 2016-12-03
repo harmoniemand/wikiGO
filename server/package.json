@@ -13,6 +13,7 @@
     "express-session": "^1.14.2",
     "handlebars": "^4.0.6",
     "jade": "~1.11.0",
+    "merge": "^1.2.0",
     "mongodb": "^2.2.12",
     "morgan": "~1.7.0",
     "passport": "^0.3.2",

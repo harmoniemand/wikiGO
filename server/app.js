@@ -37,6 +37,7 @@ var ServerApplication = (function () {
             var connectionStr = config.db.connection;
             return MongoClient.connect(connectionStr);
         }).then(function (db) {
+            global.db = db;
             var metaCollection = db.collection('meta');
             metaCollection.update({ "_id": "started" }, { $set: { "value": new Date() } }, { upsert: true }).then(function () {
             });
