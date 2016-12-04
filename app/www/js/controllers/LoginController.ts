@@ -1,6 +1,7 @@
 class LoginController {
 
   constructor($scope, private GeoApiService, private GeoLocationService, private $state) {
+    $(".title.title-left").text("WikiGO!");
     $scope.$ctrl = this;
     window.GeoApiService = GeoApiService;
     window.GeoLocationService = GeoLocationService;

@@ -1,23 +1,11 @@
 class DashController {
 
   constructor(private $scope, private GeoApiService, private GeoLocationService, private $ionicModal) {
+    $(".title.title-left").text("WikiGO!");
     $scope.$ctrl = this;
     $scope.$on('leafletDirectiveMarker.mousedown', (event, args) => {
       this.selectedMarker = args.model;
-      this.selectedMarker.challenges = [];
-      this.selectedMarker.isLoading = true;
-      this.GeoApiService.getChallengesForPlaceIds([this.selectedMarker._id]).then((challengeList) => {
-        this.selectedMarker.isLoading = false;
-        if (challengeList.length < 1) {
-          this.$scope.$apply();
-          return ;
-        }
-        this.selectedMarker.challenges = challengeList[0].list;
-        this.$scope.$apply();
-      }).catch(() => {
-        this.selectedMarker.isLoading = false;
-        this.$scope.$apply();
-      });
+      this.updateChallengeInfoForSelected();
       args.leafletObject.openPopup();
     });
     this.center = {
@@ -53,12 +41,51 @@ class DashController {
     })
   }
 
+  private updateChallengeInfoForSelected() {
+    this.selectedMarker.challenges = [];
+    this.selectedMarker.isLoading = true;
+    this.GeoApiService.getChallengesForPlaceIds([this.selectedMarker._id]).then((challengeList) => {
+      this.selectedMarker.isLoading = false;
+      if (challengeList.length < 1) {
+        this.$scope.$apply();
+        return ;
+      }
+      this.selectedMarker.challenges = challengeList[0].list;
+      this.$scope.$apply();
+    }).catch(() => {
+      this.selectedMarker.isLoading = false;
+      this.$scope.$apply();
+    });
+  }
+
+
   public showChallengeForSelectedMarker() {
     this.$ionicModal.fromTemplateUrl('templates/modal-challenges-for-marker.html', {
       scope: this.$scope,
       animation: 'slide-in-up'
     }).then((modal) => {
       modal.show();
+      this._showChallengeInfoModal = modal;
+    });
+  }
+
+  public acceptChallenge(challenge) {
+    //alert(JSON.stringify(challenge));
+    if ("shoot-photo" == challenge.type) {
+      navigator.camera.getPicture((imageURI) => {
+        alert(imageURI);
+      }, (err) => {
+
+      }, {});
+    }
+    if ("install-wikistop-module" == challenge.type) {
+      alert('Ein WikiStop Modul wurde erfolgreich installiert!')
+    }
+    if (!!this._showChallengeInfoModal) {
+      this._showChallengeInfoModal.hide();
+    }
+    this.GeoApiService.completeChallenge(this.selectedMarker._id, challenge.type).then(() => {
+      this.updateChallengeInfoForSelected();
     });
   }
 

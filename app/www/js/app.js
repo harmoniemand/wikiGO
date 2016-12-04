@@ -21,6 +21,7 @@ angular.module('starter', ['ionic', 'ui.router', 'leaflet-directive'])
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+    $(".title.title-left").text("WikiGO!");
   });
 })
 

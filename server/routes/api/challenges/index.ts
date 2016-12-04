@@ -7,7 +7,7 @@ const merge = require('merge');
 
 /* GET home page. */
 router.get('/for-place-ids', function (req, res, next) {
-    var ids = req.query.ids.split(',');
+    let ids = req.query.ids.split(',');
     console.log(ids);
     db.collection("challenges").find({"_id":{$in:ids}}).toArray((err, challenges) => {
         if (!!err) {
@@ -18,5 +18,17 @@ router.get('/for-place-ids', function (req, res, next) {
         res.json(challenges);
     });
 });
+
+router.post('/for-place/:placeId/complete/:challengeType', function (req, res, next) {
+    let placeId = req.params.placeId;
+    let challengeType = req.params.challengeType;
+    console.log(placeId, challengeType);
+    db.collection("challenges").update({"_id":placeId}, {$pull:{"list":{"type":challengeType}}}).then(() => {
+        res.json({completed: true});
+    }).catch((err) => {
+        res.json({completed: true, error: true});
+    })
+});
+
 
 module.exports = router;

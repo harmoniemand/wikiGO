@@ -17,5 +17,15 @@ router.get('/for-place-ids', function (req, res, next) {
         res.json(challenges);
     });
 });
+router.post('/for-place/:placeId/complete/:challengeType', function (req, res, next) {
+    var placeId = req.params.placeId;
+    var challengeType = req.params.challengeType;
+    console.log(placeId, challengeType);
+    db.collection("challenges").update({ "_id": placeId }, { $pull: { "list": { "type": challengeType } } }).then(function () {
+        res.json({ completed: true });
+    }).catch(function (err) {
+        res.json({ completed: true, error: true });
+    });
+});
 module.exports = router;
 //# sourceMappingURL=index.js.map

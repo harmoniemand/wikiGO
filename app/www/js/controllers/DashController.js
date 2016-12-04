@@ -5,23 +5,11 @@ var DashController = (function () {
         this.GeoApiService = GeoApiService;
         this.GeoLocationService = GeoLocationService;
         this.$ionicModal = $ionicModal;
+        $(".title.title-left").text("WikiGO!");
         $scope.$ctrl = this;
         $scope.$on('leafletDirectiveMarker.mousedown', function (event, args) {
             _this.selectedMarker = args.model;
-            _this.selectedMarker.challenges = [];
-            _this.selectedMarker.isLoading = true;
-            _this.GeoApiService.getChallengesForPlaceIds([_this.selectedMarker._id]).then(function (challengeList) {
-                _this.selectedMarker.isLoading = false;
-                if (challengeList.length < 1) {
-                    _this.$scope.$apply();
-                    return;
-                }
-                _this.selectedMarker.challenges = challengeList[0].list;
-                _this.$scope.$apply();
-            }).catch(function () {
-                _this.selectedMarker.isLoading = false;
-                _this.$scope.$apply();
-            });
+            _this.updateChallengeInfoForSelected();
             args.leafletObject.openPopup();
         });
         this.center = {
@@ -56,12 +44,50 @@ var DashController = (function () {
             _this.$scope.$apply();
         });
     }
+    DashController.prototype.updateChallengeInfoForSelected = function () {
+        var _this = this;
+        this.selectedMarker.challenges = [];
+        this.selectedMarker.isLoading = true;
+        this.GeoApiService.getChallengesForPlaceIds([this.selectedMarker._id]).then(function (challengeList) {
+            _this.selectedMarker.isLoading = false;
+            if (challengeList.length < 1) {
+                _this.$scope.$apply();
+                return;
+            }
+            _this.selectedMarker.challenges = challengeList[0].list;
+            _this.$scope.$apply();
+        }).catch(function () {
+            _this.selectedMarker.isLoading = false;
+            _this.$scope.$apply();
+        });
+    };
     DashController.prototype.showChallengeForSelectedMarker = function () {
+        var _this = this;
         this.$ionicModal.fromTemplateUrl('templates/modal-challenges-for-marker.html', {
             scope: this.$scope,
             animation: 'slide-in-up'
         }).then(function (modal) {
             modal.show();
+            _this._showChallengeInfoModal = modal;
+        });
+    };
+    DashController.prototype.acceptChallenge = function (challenge) {
+        var _this = this;
+        //alert(JSON.stringify(challenge));
+        if ("shoot-photo" == challenge.type) {
+            navigator.camera.getPicture(function (imageURI) {
+                alert(imageURI);
+            }, function (err) {
+            }, {});
+        }
+        if ("install-wikistop-module" == challenge.type) {
+            alert('Ein WikiStop Modul wurde erfolgreich installiert!');
+        }
+        if (!!this._showChallengeInfoModal) {
+            this._showChallengeInfoModal.hide();
+        }
+        this.GeoApiService.completeChallenge(this.selectedMarker._id, challenge.type).then(function () {
+            _this.updateChallengeInfoForSelected();
         });
     };
     return DashController;
