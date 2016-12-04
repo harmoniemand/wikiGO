@@ -6,7 +6,7 @@
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
 
-angular.module('starter', ['ionic', 'ui.router'])
+angular.module('starter', ['ionic', 'ui.router', 'leaflet-directive'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

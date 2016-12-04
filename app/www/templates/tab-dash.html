@@ -1,5 +1,13 @@
 <ion-view view-title="Dashboard">
   <ion-content class="padding">
-    <span>{{ $ctrl.coordinates | json }}</span>
+    <div ng-if="!!$ctrl.selectedMarker">
+      <span>{{ $ctrl.selectedMarker.name }}</span>
+      <div style="display: block;">
+        <span ng-show="$ctrl.selectedMarker.isLoading">Lade...</span>
+        <button ng-show="!$ctrl.selectedMarker.isLoading && $ctrl.selectedMarker.challenges.length >= 1" ng-click="$ctrl.showChallengeForSelectedMarker();">Challenge annehmen</button>
+        <button ng-show="!$ctrl.selectedMarker.isLoading && $ctrl.selectedMarker.challenges.length < 1" disabled>Keine Challenges verfügbar</button>
+      </div>
+    </div>
+    <leaflet lf-center="$ctrl.center" height="480px" width="640px" markers="$ctrl.markers" defaults="$ctrl.defaults"></leaflet>
   </ion-content>
 </ion-view>
